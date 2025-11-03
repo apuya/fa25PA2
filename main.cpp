@@ -91,22 +91,66 @@ int createLeafNodes(int freq[]) {
 int buildEncodingTree(int nextFree) {
     // TODO:
     // 1. Create a MinHeap object.
+    MinHeap heap;
+
     // 2. Push all leaf node indices into the heap.
+    for (int i = 0; i < nextFree; ++i) {
+        heap.push(i, weightArr);
+    }
+
     // 3. While the heap size is greater than 1:
+    while (heap.size > 1) {
     //    - Pop two smallest nodes
+        int left = heap.pop(weightArr);
+        int right = heap.pop(weightArr);
+
     //    - Create a new parent node with combined weight
+        weightArr[nextFree] = weightArr[left] + weightArr[right];
     //    - Set left/right pointers
+        leftArr[nextFree] = left;
+        rightArr[nextFree] = right;
+        charArr[nextFree] = '\0';
+
     //    - Push new parent index back into the heap
+        heap.push(nextFree, weightArr);
+    }
+
     // 4. Return the index of the last remaining node (root)
-    return -1; // placeholder
+    return heap.pop(weightArr); // placeholder
 }
 
 // Step 4: Use an STL stack to generate codes
 void generateCodes(int root, string codes[]) {
     // TODO:
     // Use stack<pair<int, string>> to simulate DFS traversal.
-    // Left edge adds '0', right edge adds '1'.
-    // Record code when a leaf node is reached.
+    stack<pair<int, string>> s;
+
+    // Start root and empty path
+    s.push({root, ""});
+
+    while (!s.empty()) {
+        // Get current node
+        int nodeIdx = s.top().first;
+        string nodeStr = s.top().second;
+        s.pop();
+
+        // Check if this is a leaf node
+        if (leftArr[nodeIdx] == -1 && rightArr[nodeIdx] == -1) {
+            // Record code when a leaf node is reached.
+            char ch = charArr[nodeIdx];
+            codes[ch - 'a'] = nodeStr;
+        }
+        else {
+            // Left edge adds '0', right edge adds '1'.
+            // Traverse children
+            if (rightArr[nodeIdx] != -1) {
+                s.push({rightArr[nodeIdx], nodeStr + "1"});
+            }
+            if (leftArr[nodeIdx] != -1) {
+                s.push({leftArr[nodeIdx], nodeStr + "0"});
+            }
+        }
+    }
 }
 
 // Step 5: Print table and encoded message
